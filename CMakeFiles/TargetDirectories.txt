@@ -1,0 +1,4 @@
+/home/pi/Desktop/IoT_Project/CMakeFiles/IoTClient.dir
+/home/pi/Desktop/IoT_Project/CMakeFiles/rebuild_cache.dir
+/home/pi/Desktop/IoT_Project/CMakeFiles/edit_cache.dir
+/home/pi/Desktop/IoT_Project/CMakeFiles/IoTServer.dir

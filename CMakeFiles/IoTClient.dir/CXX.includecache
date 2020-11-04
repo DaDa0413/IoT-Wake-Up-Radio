@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/pi/Desktop/IoT_Project/IoTClient.cpp
+stdlib.h
+-
+stdio.h
+-
+errno.h
+-
+string.h
+-
+unistd.h
+-
+sys/types.h
+-
+netinet/in.h
+-
+sys/wait.h
+-
+sys/socket.h
+-
+signal.h
+-
+ctype.h
+-
+arpa/inet.h
+-
+netdb.h
+-
+

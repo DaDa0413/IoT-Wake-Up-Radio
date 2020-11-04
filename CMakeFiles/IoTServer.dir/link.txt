@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/IoTServer.dir/IoTServer.cpp.o  -o IoTServer -lmysqlclient -lboost_thread -lboost_system -lpthread 

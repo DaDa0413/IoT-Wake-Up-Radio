@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/IoTClient.dir/IoTClient.cpp.o  -o IoTClient  -L/usr/local/lib/mysql  -L/usr/local/lib 
