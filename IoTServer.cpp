@@ -28,6 +28,7 @@ using namespace boost::asio;
 io_service global_io_service;
 string logFName("server");
 fstream csv;
+map<string, int> connectionCount;
 
 int filesize(string fname) {
     ifstream in_file(fname, ios::binary);
@@ -38,7 +39,6 @@ int filesize(string fname) {
 
 class IoTSession : public enable_shared_from_this<IoTSession> {
 private:
-    map<string, int> connectionCount;
     ip::tcp::socket         _socket;
     array<char, MAXLENGTH>  _data;
     chrono::system_clock::time_point startTime, endTime;
@@ -52,12 +52,11 @@ private:
 public:
     // Declare constructor
     IoTSession(ip::tcp::socket socket) : _socket(move(socket)) {
-        connectionCount.clear();
         fr_name = _socket.remote_endpoint().address().to_string();
         // Insert ACK
         /* insertDB(); */
         // open received file descriptor with trunc mode
-        fr.open (fr_name + "_" + to_string(connectionCount[fr_name]) , std::fstream::in | std::fstream::out | std::fstream::trunc);
+        // fr.open (fr_name + "_" + to_string(connectionCount[fr_name]) , std::fstream::in | std::fstream::out | std::fstream::trunc);
         // open log file descriptor with trunc mode
         flog.open (LogDIR + logFName + ".log", std::fstream::in | std::fstream::out | std::fstream::app);
         startTime = chrono::system_clock::now(); 
@@ -80,7 +79,7 @@ public:
         csv << fr_name + "," + to_string(connectionCount[fr_name]++) + ","  + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\n";
 
         // close received file descriptor (bug for fr.close before do_read finish???????)
-        fr.close();
+        // fr.close();
         flog.close();
     };
 
@@ -94,7 +93,7 @@ private:
                     if (!ec) {
                         string content;
                         content.append(_data.data(), _data.data()+length);
-                        fr << content;
+                        // fr << content;
                         do_read();
                     }
                 });
@@ -265,6 +264,7 @@ int main (int argc, char *argv[])
         logFName.assign(argv[2]);
     }
     csv.open(LogDIR + logFName + ".csv", std::fstream::in | std::fstream::out | std::fstream::app);
+    connectionCount.clear();
 
     try {
         IoTServer server(port);
