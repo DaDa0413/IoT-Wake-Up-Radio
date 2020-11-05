@@ -20,7 +20,7 @@
 #include <map>
 #define PORT 7001 // Server's Port number
 #define MAXLENGTH 3000
-#define LogDIR "/home/pi/Desktop/log/IoT_Project"
+#define LogDIR "/home/pi/Desktop/IoT_Project/log"
 map<string, int> connectionCount;
 
 using namespace std;
