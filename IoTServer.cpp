@@ -272,7 +272,7 @@ int main (int argc, char *argv[])
         global_io_service.run();
     } catch (exception& e) {
         cerr << "Exception: " << e.what() << "\n";
-        csv.close();
+// csv.close();
     }
 
     return 0;

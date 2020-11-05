@@ -31,6 +31,10 @@ ctype.h
 -
 arpa/inet.h
 -
+fcntl.h
+-
 netdb.h
+-
+iostream
 -
 
