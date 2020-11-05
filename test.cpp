@@ -30,7 +30,7 @@ int filesize(string fname)
 
 int main (int argc, char *argv[])
 {
-    double test = double(filesize("1mb")) / 1000000;
+    double test = double(filesize("/home/daniellin/Desktop/WuR/IoT-Wake-Up-Radio/1mb")) / 1000000;
     cout << to_string(test); // MB
 
     return 0;
