@@ -30,7 +30,8 @@ int filesize(string fname)
 
 int main (int argc, char *argv[])
 {
-    cout << to_string((double)(filesize("1mb")) / 1000000); // MB
+    double test = double(filesize("1mb")) / 1000000;
+    cout << to_string(test); // MB
 
     return 0;
 }
