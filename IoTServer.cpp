@@ -17,15 +17,17 @@
 #include <utility>
 #include <chrono>
 #include <ctime>
+#include <map>
 #define PORT 7001 // Server's Port number
 #define MAXLENGTH 3000
-#define LogDIR "/home/pi/Desktop/log/"
-
+#define LogDIR "/home/pi/Desktop/log/IoT_Project"
+map<string, int> connectionCount;
 
 using namespace std;
 using namespace boost::asio;
 
 io_service global_io_service;
+string logFName("server");
 
 int filesize(string fname) {
     ifstream in_file(fname, ios::binary);
@@ -40,7 +42,7 @@ private:
     chrono::system_clock::time_point startTime, endTime;
     string      fr_name;
     fstream     fr,flog;
-    char        rfID[24];
+    // char        rfID[24];
     // MYSQL       *conn;
     // MYSQL_RES   *res;
     // MYSQL_ROW   row;
@@ -48,16 +50,17 @@ private:
 public:
     // Declare constructor
     IoTSession(ip::tcp::socket socket) : _socket(move(socket)) {
+        connectionCount.clear();
         fr_name = _socket.remote_endpoint().address().to_string();
         // Insert ACK
         /* insertDB(); */
         // open received file descriptor with trunc mode
-        fr.open (fr_name, std::fstream::in | std::fstream::out | std::fstream::trunc);
+        fr.open (fr_name + "_" + to_string(connectionCount[fr_name]++) , std::fstream::in | std::fstream::out | std::fstream::trunc);
         // open log file descriptor with trunc mode
-        std::string logfname(rfID);
-        flog.open (LogDIR + logfname + ".log", std::fstream::in | std::fstream::out | std::fstream::app);
-        startTime = chrono::system_clock::now();
-        flog << "started computation at:\t\t" << read_gps() << "\t" << toTime(startTime);
+        flog.open (LogDIR + logFName + ".log", std::fstream::in | std::fstream::out | std::fstream::app);
+        startTime = chrono::system_clock::now(); 
+        flog << "----- Session: " + fr_name + "-----\n";
+        flog << "Started computation at: " << toTime(startTime);
     }
 
     void start() {
@@ -81,8 +84,8 @@ public:
 
 private:
     void do_read() {
-        auto self(shared_from_this());
 
+        auto self(shared_from_this());
         _socket.async_read_some(
                 buffer(_data, MAXLENGTH),
                 [this, self](boost::system::error_code ec, std::size_t length) {
@@ -94,6 +97,10 @@ private:
                     }
                 });
     }
+    // *****************************
+    // Read GPS from file,
+    // But we don't have the file
+    // *****************************
     string read_gps() {
         fstream     fgps;
         string dir = LogDIR, lat, lng, result;
@@ -249,9 +256,11 @@ int main (int argc, char *argv[])
     short port = PORT;      // default PORT = 7001
     if(argc == 2) {
         port = static_cast<short>(atoi(argv[1]));
-    } else if (argc > 2) {
-        cerr << "Usage:" << argv[0] << " [port]" << endl;
-        return -1;
+    }
+    else if (argc == 3)
+    {
+        port = static_cast<short>(atoi(argv[1]));
+        logFName.assign(argv[2]);
     }
 
     try {
