@@ -27,6 +27,7 @@ using namespace boost::asio;
 
 io_service global_io_service;
 string logFName("server");
+fstream csv;
 
 int filesize(string fname) {
     ifstream in_file(fname, ios::binary);
@@ -34,6 +35,7 @@ int filesize(string fname) {
     int file_size = in_file.tellg();
     return file_size;
 }
+
 class IoTSession : public enable_shared_from_this<IoTSession> {
 private:
     map<string, int> connectionCount;
@@ -41,7 +43,7 @@ private:
     array<char, MAXLENGTH>  _data;
     chrono::system_clock::time_point startTime, endTime;
     string      fr_name;
-    fstream     fr,flog;
+    fstream fr, flog;
     // char        rfID[24];
     // MYSQL       *conn;
     // MYSQL_RES   *res;
@@ -55,7 +57,7 @@ public:
         // Insert ACK
         /* insertDB(); */
         // open received file descriptor with trunc mode
-        fr.open (fr_name + "_" + to_string(connectionCount[fr_name]++) , std::fstream::in | std::fstream::out | std::fstream::trunc);
+        fr.open (fr_name + "_" + to_string(connectionCount[fr_name]) , std::fstream::in | std::fstream::out | std::fstream::trunc);
         // open log file descriptor with trunc mode
         flog.open (LogDIR + logFName + ".log", std::fstream::in | std::fstream::out | std::fstream::app);
         startTime = chrono::system_clock::now(); 
@@ -75,7 +77,7 @@ public:
         flog << "finished computation at:\t" << read_gps() << "\t" << toTime(endTime);
         double fsize = double (filesize(fr_name)) / 1000000; // MB
         flog << "file size:\t\t\t" << to_string(fsize) << "MB\t" << elapsed_seconds.count() << "s\t" << to_string(fsize/elapsed_seconds.count()) << "Mbps\n";
-
+        csv << fr_name + "," + to_string(connectionCount[fr_name]++) + ","  + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\n";
 
         // close received file descriptor (bug for fr.close before do_read finish???????)
         fr.close();
@@ -262,12 +264,14 @@ int main (int argc, char *argv[])
         port = static_cast<short>(atoi(argv[1]));
         logFName.assign(argv[2]);
     }
+    csv.open(LogDIR + logFName + ".csv", std::fstream::in | std::fstream::out | std::fstream::app);
 
     try {
         IoTServer server(port);
         global_io_service.run();
     } catch (exception& e) {
         cerr << "Exception: " << e.what() << "\n";
+        csv.close();
     }
 
     return 0;
