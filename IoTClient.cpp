@@ -17,7 +17,7 @@
 
 #define PORT 7001
 #define LENGTH 3000
-#define IP_ADDRESS "127.0.0.1"
+#define IP_ADDRESS "192.168.10.2"
 
 
 void error(const char *msg)
