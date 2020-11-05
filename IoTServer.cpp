@@ -21,6 +21,7 @@
 #define PORT 7001 // Server's Port number
 #define MAXLENGTH 3000
 #define LogDIR "/home/pi/Desktop/log/"
+#define fileDIR "/home/pi/Desktop/received/"
 
 using namespace std;
 using namespace boost::asio;
@@ -52,11 +53,11 @@ private:
 public:
     // Declare constructor
     IoTSession(ip::tcp::socket socket) : _socket(move(socket)) {
-        fr_name = _socket.remote_endpoint().address().to_string();
+        fr_name = fileDIR + _socket.remote_endpoint().address().to_string();
         // Insert ACK
         /* insertDB(); */
         // open received file descriptor with trunc mode
-        // fr.open (fr_name + "_" + to_string(connectionCount[fr_name]) , std::fstream::in | std::fstream::out | std::fstream::trunc);
+        fr.open (fr_name + "_" + to_string(connectionCount[fr_name]) , std::fstream::in | std::fstream::out | std::fstream::trunc);
         // open log file descriptor with trunc mode
         flog.open (LogDIR + logFName + ".log", std::fstream::in | std::fstream::out | std::fstream::app);
         startTime = chrono::system_clock::now(); 
@@ -79,7 +80,7 @@ public:
         csv << fr_name + "," + to_string(connectionCount[fr_name]++) + ","  + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\n";
 
         // close received file descriptor (bug for fr.close before do_read finish???????)
-        // fr.close();
+        fr.close();
         flog.close();
     };
 
@@ -93,7 +94,7 @@ private:
                     if (!ec) {
                         string content;
                         content.append(_data.data(), _data.data()+length);
-                        // fr << content;
+                        fr << content;
                         do_read();
                     }
                 });
