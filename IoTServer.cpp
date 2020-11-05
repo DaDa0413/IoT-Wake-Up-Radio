@@ -1,4 +1,4 @@
-#include <mysql/mysql.h>
+// #include <mysql/mysql.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +17,6 @@
 #include <utility>
 #include <chrono>
 #include <ctime>
-
 #define PORT 7001 // Server's Port number
 #define MAXLENGTH 3000
 #define LogDIR "/home/pi/Desktop/log/"
@@ -42,16 +41,16 @@ private:
     string      fr_name;
     fstream     fr,flog;
     char        rfID[24];
-    MYSQL       *conn;
-    MYSQL_RES   *res;
-    MYSQL_ROW   row;
+    // MYSQL       *conn;
+    // MYSQL_RES   *res;
+    // MYSQL_ROW   row;
 
 public:
     // Declare constructor
     IoTSession(ip::tcp::socket socket) : _socket(move(socket)) {
         fr_name = _socket.remote_endpoint().address().to_string();
         // Insert ACK
-        insertDB();
+        /* insertDB(); */
         // open received file descriptor with trunc mode
         fr.open (fr_name, std::fstream::in | std::fstream::out | std::fstream::trunc);
         // open log file descriptor with trunc mode
@@ -105,85 +104,85 @@ private:
         fgps.close();
         return result;
     }
-    void connDB() {
-        char server[17], user[20], password[20], database[20];
+    // void connDB() {
+    //     char server[17], user[20], password[20], database[20];
 
-        // Setting MYSQL server
-        strcpy(server, "140.113.216.91");
-        strcpy(user, "cloud");
-        strcpy(password, "cloud2016");
-        strcpy(database, "ray");
+    //     // Setting MYSQL server
+    //     strcpy(server, "140.113.216.91");
+    //     strcpy(user, "cloud");
+    //     strcpy(password, "cloud2016");
+    //     strcpy(database, "ray");
 
-        // Connect to database
-        conn = mysql_init(NULL);
-        if (!mysql_real_connect(conn, server, user, password, database, 0, NULL, 0)) {
-            fprintf(stderr, "%s\n", mysql_error(conn));
-            exit(1);
-        }
-    }
-    void insertUAVack() {
-        // Get local time
-        struct tm * timeinfo;
-        char timestamp[20], str[40960];
-        time_t now;
+    //     // Connect to database
+    //     conn = mysql_init(NULL);
+    //     if (!mysql_real_connect(conn, server, user, password, database, 0, NULL, 0)) {
+    //         fprintf(stderr, "%s\n", mysql_error(conn));
+    //         exit(1);
+    //     }
+    // }
+    // void insertUAVack() {
+    //     // Get local time
+    //     struct tm * timeinfo;
+    //     char timestamp[20], str[40960];
+    //     time_t now;
 
-        time(&now);
-        timeinfo = localtime(&now);
-        sprintf(timestamp, "%d-%d-%d %d:%d:%d", timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    //     time(&now);
+    //     timeinfo = localtime(&now);
+    //     sprintf(timestamp, "%d-%d-%d %d:%d:%d", timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
-        // Insert data
-        sprintf(str,"INSERT INTO `uavData`(`ipAddr`, `rawdata`, `receiveGWTime`, `gwip`, `gwid`, `rssi`, `snr`) VALUES ");
-        char temp[256];
-        sprintf(temp, "('%s', 'NOOO', '%s', '140.113.216.75', '00001c497bcaae8a', -108, -1.3)", fr_name.c_str(), timestamp);
-        strcat(str, temp);
-        if(mysql_query(conn, str)) {
-            fprintf(stderr, "1, %s\n", mysql_error(conn));
-            exit(1);
-        }
-        //mysql_free_result(res);
-    }
-    void insertRFMack() {
-        char str[40960];
-        //char rfID[24];
-        sprintf(str, "SELECT rfID FROM `info` WHERE ipAddr = \"%s\"", fr_name.c_str());
-        if(mysql_query(conn, str)){
-            fprintf(stderr, "2, %s\n", mysql_error(conn));
-            exit(1);
-        }
-        if(res = mysql_use_result(conn)){
-            if(row = mysql_fetch_row(res)){
-                if(row[0] != NULL)
-                    strcpy(rfID, row[0]);
-            }
-        }
-        // cout << rfID << endl;
-        mysql_free_result(res);
+    //     // Insert data
+    //     sprintf(str,"INSERT INTO `uavData`(`ipAddr`, `rawdata`, `receiveGWTime`, `gwip`, `gwid`, `rssi`, `snr`) VALUES ");
+    //     char temp[256];
+    //     sprintf(temp, "('%s', 'NOOO', '%s', '140.113.216.75', '00001c497bcaae8a', -108, -1.3)", fr_name.c_str(), timestamp);
+    //     strcat(str, temp);
+    //     if(mysql_query(conn, str)) {
+    //         fprintf(stderr, "1, %s\n", mysql_error(conn));
+    //         exit(1);
+    //     }
+    //     //mysql_free_result(res);
+    // }
+    // void insertRFMack() {
+    //     char str[40960];
+    //     //char rfID[24];
+    //     sprintf(str, "SELECT rfID FROM `info` WHERE ipAddr = \"%s\"", fr_name.c_str());
+    //     if(mysql_query(conn, str)){
+    //         fprintf(stderr, "2, %s\n", mysql_error(conn));
+    //         exit(1);
+    //     }
+    //     if(res = mysql_use_result(conn)){
+    //         if(row = mysql_fetch_row(res)){
+    //             if(row[0] != NULL)
+    //                 strcpy(rfID, row[0]);
+    //         }
+    //     }
+    //     // cout << rfID << endl;
+    //     mysql_free_result(res);
 
-        // Get local time
-        struct tm * timeinfo;
-        char timestamp[20];
-        time_t now;
+    //     // Get local time
+    //     struct tm * timeinfo;
+    //     char timestamp[20];
+    //     time_t now;
 
-        time(&now);
-        timeinfo = localtime(&now);
-        sprintf(timestamp, "%d-%d-%d %d:%d:%d", timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    //     time(&now);
+    //     timeinfo = localtime(&now);
+    //     sprintf(timestamp, "%d-%d-%d %d:%d:%d", timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
-        // Insert data
-        sprintf(str,"INSERT INTO `rfm69`(`rfID`, `ackTime`, `baseID`) VALUES ");
-        char temp[256];
-        sprintf(temp, "('%s', '%s', '22:22:22:22:22:22:22:22')", rfID, timestamp);
-        strcat(str, temp);
-        if(mysql_query(conn, str)) {
-            fprintf(stderr, "3, %s\n", mysql_error(conn));
-            exit(1);
-        }
-        //mysql_free_result(res);
-    }
-    int  insertDB() {
-        connDB();
-        insertUAVack();
-        insertRFMack();
-    }
+    //     // Insert data
+    //     sprintf(str,"INSERT INTO `rfm69`(`rfID`, `ackTime`, `baseID`) VALUES ");
+    //     char temp[256];
+    //     sprintf(temp, "('%s', '%s', '22:22:22:22:22:22:22:22')", rfID, timestamp);
+    //     strcat(str, temp);
+    //     if(mysql_query(conn, str)) {
+    //         fprintf(stderr, "3, %s\n", mysql_error(conn));
+    //         exit(1);
+    //     }
+    //     //mysql_free_result(res);
+    // }
+    // int  insertDB() {
+    //     connDB();
+    //     insertUAVack();
+    //     insertRFMack();
+    // }
     char* toTime(chrono::system_clock::time_point target) {
         time_t temp = chrono::system_clock::to_time_t(target);
         char* result = ctime(&temp);
