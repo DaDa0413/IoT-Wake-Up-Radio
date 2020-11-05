@@ -7,8 +7,6 @@
 #IncludeRegexTransform: 
 
 /home/pi/Desktop/IoT_Project/IoTServer.cpp
-mysql/mysql.h
--
 time.h
 -
 stdio.h
@@ -44,5 +42,7 @@ utility
 chrono
 -
 ctime
+-
+map
 -
 

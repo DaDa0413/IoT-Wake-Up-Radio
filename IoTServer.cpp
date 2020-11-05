@@ -21,7 +21,6 @@
 #define PORT 7001 // Server's Port number
 #define MAXLENGTH 3000
 #define LogDIR "/home/pi/Desktop/IoT_Project/log"
-map<string, int> connectionCount;
 
 using namespace std;
 using namespace boost::asio;
@@ -37,6 +36,7 @@ int filesize(string fname) {
 }
 class IoTSession : public enable_shared_from_this<IoTSession> {
 private:
+    map<string, int> connectionCount;
     ip::tcp::socket         _socket;
     array<char, MAXLENGTH>  _data;
     chrono::system_clock::time_point startTime, endTime;
