@@ -78,7 +78,7 @@ public:
         // double fsize = double (filesize(fr_name)) / 1000000; // MB
         double fsize = 1.048576; // 1 MB
         flog << "file size:\t\t\t" << to_string(fsize) << "MB\t" << elapsed_seconds.count() << "s\t" << to_string(fsize/elapsed_seconds.count()) << "Mbps\n";
-        csv << fr_name + "," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\n";
+        csv << fr_name + "," + toTime(endTime) + "," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\r\n";
 
         // fr.close();
         flog.close();
