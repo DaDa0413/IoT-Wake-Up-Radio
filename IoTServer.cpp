@@ -53,7 +53,7 @@ private:
 public:
     // Declare constructor
     IoTSession(ip::tcp::socket socket) : _socket(move(socket)) {
-        fr_name = fileDIR + _socket.remote_endpoint().address().to_string();
+        fr_name = _socket.remote_endpoint().address().to_string();
         // Insert ACK
         /* insertDB(); */
         // open received file descriptor with trunc mode
@@ -78,7 +78,7 @@ public:
         // double fsize = double (filesize(fr_name)) / 1000000; // MB
         double fsize = 1.048576; // 1 MB
         flog << "file size:\t\t\t" << to_string(fsize) << "MB\t" << elapsed_seconds.count() << "s\t" << to_string(fsize/elapsed_seconds.count()) << "Mbps\n";
-        csv << fr_name + "," + toTime(endTime) + "," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\r\n";
+        csv << "\"" << fr_name + "\",\"" + toTime(endTime) + "\"," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\r\n";
 
         // fr.close();
         flog.close();
