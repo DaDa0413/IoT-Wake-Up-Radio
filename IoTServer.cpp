@@ -27,9 +27,7 @@ using namespace std;
 using namespace boost::asio;
 
 io_service global_io_service;
-string logFName("server");
 fstream csv;
-// map<string, int> connectionCount;
 
 int filesize(string fname) {
     ifstream in_file(fname, ios::binary);
@@ -44,7 +42,6 @@ private:
     array<char, MAXLENGTH>  _data;
     chrono::system_clock::time_point startTime, endTime;
     string      fr_name;
-    fstream fr, flog;
     // char        rfID[24];
     // MYSQL       *conn;
     // MYSQL_RES   *res;
@@ -56,13 +53,8 @@ public:
         fr_name = _socket.remote_endpoint().address().to_string();
         // Insert ACK
         /* insertDB(); */
-        // open received file descriptor with trunc mode
-        // fr.open (fr_name + "_" + to_string(connectionCount[fr_name]) , std::fstream::in | std::fstream::out | std::fstream::trunc);
-        // open log file descriptor with trunc mode
-        flog.open (LogDIR + logFName + ".log", std::fstream::in | std::fstream::out | std::fstream::app);
+        // open log file descriptor with app mode
         startTime = chrono::system_clock::now(); 
-        flog << "----- Session: " + fr_name + "-----\n";
-        flog << "Started computation at: " << toTime(startTime);
     }
 
     void start() {
@@ -74,14 +66,10 @@ public:
         // Count end time and data rate
         endTime = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = endTime-startTime;
-        flog << "finished computation at:\t" << read_gps() << "\t" << toTime(endTime);
         // double fsize = double (filesize(fr_name)) / 1000000; // MB
         double fsize = 1.048576; // 1 MB
-        flog << "file size:\t\t\t" << to_string(fsize) << "MB\t" << elapsed_seconds.count() << "s\t" << to_string(fsize/elapsed_seconds.count()) << "Mbps\n";
-        csv << "\"" << fr_name + "\",\"" + toTime(endTime) + "\"," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << "\r\n";
+        csv << "\"" << fr_name + "\",\"" + toTime(endTime) + "\"," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << " \r\n";
 
-        // fr.close();
-        flog.close();
     };
 
 private:
@@ -94,7 +82,6 @@ private:
                     if (!ec) {
                         string content;
                         content.append(_data.data(), _data.data()+length);
-                        // fr << content;
                         do_read();
                     }
                 });
@@ -192,11 +179,16 @@ private:
     //     insertUAVack();
     //     insertRFMack();
     // }
-    char* toTime(chrono::system_clock::time_point target) {
-        time_t temp = chrono::system_clock::to_time_t(target);
+    char* toTime(std::chrono::system_clock::time_point target) {
+        time_t temp = std::chrono::system_clock::to_time_t(target);
         char* result = ctime(&temp);
+        for (char *ptr = result; *ptr != '\0'; ptr++)
+        {
+            if (*ptr == '\n' || *ptr == '\r')
+                *ptr = '\0';
+        }
         return result;
-    }
+}
 };
 
 class IoTServer {
@@ -256,13 +248,21 @@ int main (int argc, char *argv[])
     signal(SIGCHLD, SIG_IGN);
     // set port
     short port = PORT;      // default PORT = 7001
+    string logFName("tcp_");
     if(argc == 2) {
-        port = static_cast<short>(atoi(argv[1]));
+        cout << "Now Usage: IoTServer fname" << endl;
+        logFName += argv[1];
     }
     else if (argc == 3)
     {
-        port = static_cast<short>(atoi(argv[1]));
-        logFName.assign(argv[2]);
+        cout << "Now Usage: IoTServer fname port" << endl;
+        logFName += argv[1];
+        port = static_cast<short>(atoi(argv[2]));
+    }
+    else
+    {
+        cout << "[ERROR] Usage: IoTServer fname [port]" << endl;
+        exit(EXIT_FAILURE);
     }
     csv.open(LogDIR + logFName + ".csv", std::fstream::in | std::fstream::out | std::fstream::app);
     // connectionCount.clear();
