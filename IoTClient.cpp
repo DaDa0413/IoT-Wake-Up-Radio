@@ -28,7 +28,7 @@ int sockfd;
 void error(const char *msg)
 {
     perror(msg);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 void connect_w_to(void)
@@ -47,7 +47,7 @@ void connect_w_to(void)
     {
         fprintf(stderr, "Error creating socket (%d %s)\n", errno, strerror(errno));
         fprintf(stdout, "Error creating socket (%d %s)\n", errno, strerror(errno));
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     /* Fill the socket address struct */
@@ -60,14 +60,14 @@ void connect_w_to(void)
     {
         fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
         fprintf(stdout, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     arg |= O_NONBLOCK;
     if (fcntl(sockfd, F_SETFL, arg) < 0)
     {
         fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
         fprintf(stdout, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     /* Trying to connect with timeout */
     res = connect(sockfd, (struct sockaddr *)&addr, sizeof(addr));
@@ -87,7 +87,7 @@ void connect_w_to(void)
                 {
                     fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno));
                     fprintf(stdout, "Error connecting %d - %s\n", errno, strerror(errno));
-                    exit(0);
+                    exit(EXIT_FAILURE);
                 }
                 else if (res > 0)
                 {
@@ -97,14 +97,14 @@ void connect_w_to(void)
                     {
                         fprintf(stderr, "Error in getsockopt() %d - %s\n", errno, strerror(errno));
                         fprintf(stdout, "Error in getsockopt() %d - %s\n", errno, strerror(errno));
-                        exit(0);
+                        exit(EXIT_FAILURE);
                     }
                     /* Check the value returned... */
                     if (valopt)
                     {
                         fprintf(stderr, "Error in delayed connection() %d - %s\n", valopt, strerror(valopt));
                         fprintf(stdout, "Error in delayed connection() %d - %s\n", valopt, strerror(valopt));
-                        exit(0);
+                        exit(EXIT_FAILURE);
                     }
                     break;
                 }
@@ -112,7 +112,7 @@ void connect_w_to(void)
                 {
                     fprintf(stderr, "Timeout in select() - Cancelling!\n");
                     fprintf(stdout, "Timeout in select() - Cancelling!\n");
-                    exit(0);
+                    exit(EXIT_FAILURE);
                 }
             } while (1);
         }
@@ -120,7 +120,7 @@ void connect_w_to(void)
         {
             fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno));
             fprintf(stdout, "Error connecting %d - %s\n", errno, strerror(errno));
-            exit(0);
+            exit(EXIT_FAILURE);
         }
     }
     /* Set to blocking mode again... */
@@ -128,14 +128,14 @@ void connect_w_to(void)
     {
         fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
         fprintf(stdout, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno));
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     arg &= (~O_NONBLOCK);
     if (fcntl(sockfd, F_SETFL, arg) < 0)
     {
         fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
         fprintf(stdout, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     if (argc != 2)
     {
         fprintf(stderr, "usage: IoTClient [filename]\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     /* Try to connect the remote */
     connect_w_to();
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     if (fs == NULL)
     {
         printf("ERROR: File %s not found.\n", argv[1]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     bzero(sdbuf, LENGTH);
