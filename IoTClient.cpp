@@ -76,6 +76,7 @@ void connect_w_to(void)
         if (errno == EINPROGRESS)
         {
             fprintf(stderr, "EINPROGRESS in connect() - selecting\n");
+            fprintf(stdout, "EINPROGRESS in connect() - selecting\n");
             do
             {
                 tv.tv_sec = 1;
@@ -159,7 +160,7 @@ int main(int argc, char *argv[])
     FILE *fs = fopen(argv[1], "r");
     if (fs == NULL)
     {
-        printf("ERROR: File %s not found.\n", argv[1]);
+        fprintf(stderr, "ERROR: File %s not found.\n", argv[1]);
         exit(EXIT_FAILURE);
     }
 
