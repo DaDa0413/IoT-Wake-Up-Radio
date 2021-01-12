@@ -28,6 +28,7 @@ using namespace boost::asio;
 
 io_service global_io_service;
 fstream csv;
+int cur_round;
 
 int filesize(string fname) {
     ifstream in_file(fname, ios::binary);
@@ -67,8 +68,8 @@ public:
         endTime = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = endTime-startTime;
         // double fsize = double (filesize(fr_name)) / 1000000; // MB
-        double fsize = 1.048576; // 1 MB
-        csv << "\"" << fr_name + "\",\"" + toTime(endTime) + "\"," + to_string(fsize) + "," +  to_string(elapsed_seconds.count()) + "," + to_string(fsize / elapsed_seconds.count()) << " \r\n";
+        double fsize = 8; // 1 KB = 8 Kbits
+        csv << "\"" << fr_name + "\"," << cur_round << ",\"" << toTime(endTime) << "\"," +  to_string(fsize / elapsed_seconds.count()) << " \r\n";
 
     };
 
@@ -249,19 +250,14 @@ int main (int argc, char *argv[])
     // set port
     short port = PORT;      // default PORT = 7001
     string logFName("tcp_");
-    if(argc == 2) {
-        cout << "Now Usage: IoTServer fname" << endl;
+    if(argc == 3) {
+        cout << "Now Usage: IoTServer fname cur_round" << endl;
         logFName += argv[1];
-    }
-    else if (argc == 3)
-    {
-        cout << "Now Usage: IoTServer fname port" << endl;
-        logFName += argv[1];
-        port = static_cast<short>(atoi(argv[2]));
+        cur_round = atoi(argv[2]);
     }
     else
     {
-        cout << "[ERROR] Usage: IoTServer fname [port]" << endl;
+        cout << "[ERROR] Usage: IoTServer fname cur_round" << endl;
         exit(EXIT_FAILURE);
     }
     csv.open(LogDIR + logFName + ".csv", std::fstream::in | std::fstream::out | std::fstream::app);
