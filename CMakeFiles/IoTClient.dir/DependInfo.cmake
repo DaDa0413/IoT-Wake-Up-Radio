@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/pi/Desktop/IoT_Project/IoTClient.cpp" "/home/pi/Desktop/IoT_Project/CMakeFiles/IoTClient.dir/IoTClient.cpp.o"
+  "/home/pi/Desktop/IoT-Wake-Up-Radio/IoTClient.cpp" "/home/pi/Desktop/IoT-Wake-Up-Radio/CMakeFiles/IoTClient.dir/IoTClient.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

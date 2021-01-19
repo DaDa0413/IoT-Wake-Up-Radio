@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/pi/Desktop/IoT_Project/IoTClient.cpp
+/home/pi/Desktop/IoT-Wake-Up-Radio/IoTClient.cpp
 stdlib.h
 -
 stdio.h

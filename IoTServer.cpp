@@ -7,6 +7,7 @@
 #include <array>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -18,6 +19,7 @@
 #include <chrono>
 #include <ctime>
 #include <map>
+#include <vector>
 #define PORT 7001 // Server's Port number
 #define MAXLENGTH 3000
 #define LogDIR "/home/pi/Desktop/log/"
@@ -26,6 +28,7 @@
 using namespace std;
 using namespace boost::asio;
 
+map<string, chrono::system_clock::time_point> files;
 io_service global_io_service;
 fstream csv;
 int cur_round;
@@ -37,12 +40,24 @@ int filesize(string fname) {
     return file_size;
 }
 
+char* toTime(std::chrono::system_clock::time_point target) {
+        time_t temp = std::chrono::system_clock::to_time_t(target);
+        char* result = ctime(&temp);
+        for (char *ptr = result; *ptr != '\0'; ptr++)
+        {
+            if (*ptr == '\n' || *ptr == '\r')
+                *ptr = '\0';
+        }
+        return result;
+}
+
 class IoTSession : public enable_shared_from_this<IoTSession> {
 private:
     ip::tcp::socket         _socket;
     array<char, MAXLENGTH>  _data;
     chrono::system_clock::time_point startTime, endTime;
     string      fr_name;
+    fstream fr;
     // char        rfID[24];
     // MYSQL       *conn;
     // MYSQL_RES   *res;
@@ -51,11 +66,15 @@ private:
 public:
     // Declare constructor
     IoTSession(ip::tcp::socket socket) : _socket(move(socket)) {
-        fr_name = _socket.remote_endpoint().address().to_string();
+        char temp[5];
+        sprintf(temp, "%d", cur_round);
+        fr_name = _socket.remote_endpoint().address().to_string() + "_" + temp;
         // Insert ACK
         /* insertDB(); */
         // open log file descriptor with app mode
-        startTime = chrono::system_clock::now(); 
+        fr.open(fr_name, std::fstream::in | std::fstream::out | std::fstream::trunc);
+        startTime = chrono::system_clock::now();
+        files.insert(pair<string, chrono::system_clock::time_point>(fr_name, startTime));
     }
 
     void start() {
@@ -67,10 +86,13 @@ public:
         // Count end time and data rate
         endTime = chrono::system_clock::now();
         chrono::duration<double> elapsed_seconds = endTime-startTime;
-        // double fsize = double (filesize(fr_name)) / 1000000; // MB
-        double fsize = 8; // 1 KB = 8 Kbits
-        csv << "\"" << fr_name + "\"," << cur_round << ",\"" << toTime(endTime) << "\"," +  to_string(fsize / elapsed_seconds.count()) << " \r\n";
+        files.erase(fr_name);
+        double fsize = double (filesize(fr_name)) / 128; // kb
+        printf("size:%lf\n", fsize);
 
+        // double fsize = 8; // 1 KB = 8 Kbits
+        csv << "\"" << fr_name + "\"," << cur_round << ",\"" << toTime(endTime) << "\"," +  to_string(fsize / elapsed_seconds.count()) << " \r\n";
+        fr.close();
     };
 
 private:
@@ -83,6 +105,7 @@ private:
                     if (!ec) {
                         string content;
                         content.append(_data.data(), _data.data()+length);
+                        fr << content;
                         do_read();
                     }
                 });
@@ -180,16 +203,6 @@ private:
     //     insertUAVack();
     //     insertRFMack();
     // }
-    char* toTime(std::chrono::system_clock::time_point target) {
-        time_t temp = std::chrono::system_clock::to_time_t(target);
-        char* result = ctime(&temp);
-        for (char *ptr = result; *ptr != '\0'; ptr++)
-        {
-            if (*ptr == '\n' || *ptr == '\r')
-                *ptr = '\0';
-        }
-        return result;
-}
 };
 
 class IoTServer {
@@ -243,6 +256,21 @@ private:
     }
 };
 
+void handler(const boost::system::error_code &error, int signal_number)
+{
+    std::cout << "handling signal " << signal_number << std::endl;
+    for (map<string, chrono::system_clock::time_point>::iterator it = files.begin(); it != files.end();)
+    {
+        chrono::system_clock::time_point endTime = chrono::system_clock::now();
+        chrono::duration<double> elapsed_seconds = endTime - it->second;
+        double fsize = double(filesize(it->first)) / 128; // kb
+        printf("size:%lf\n", fsize);
+        csv << "\"" << it->first + "\"," << cur_round << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count()) << " \r\n";
+        it = files.erase(it);
+    }
+    csv.close();
+    exit(1);
+}
 
 int main (int argc, char *argv[])
 {
@@ -251,17 +279,19 @@ int main (int argc, char *argv[])
     short port = PORT;      // default PORT = 7001
     string logFName("tcp_");
     if(argc == 3) {
-        cout << "Now Usage: IoTServer fname cur_round" << endl;
+        cout << "Now Usage: IoTServer logName cur_round" << endl;
         logFName += argv[1];
         cur_round = atoi(argv[2]);
     }
     else
     {
-        cout << "[ERROR] Usage: IoTServer fname cur_round" << endl;
+        cout << "[ERROR] Usage: IoTServer logName cur_round" << endl;
         exit(EXIT_FAILURE);
     }
     csv.open(LogDIR + logFName + ".csv", std::fstream::in | std::fstream::out | std::fstream::app);
     // connectionCount.clear();
+    boost::asio::signal_set signals(global_io_service, SIGINT);
+    signals.async_wait(handler);
 
     try {
         IoTServer server(port);

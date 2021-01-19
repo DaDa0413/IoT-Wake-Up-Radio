@@ -1,4 +1,4 @@
-/home/pi/Desktop/IoT_Project/CMakeFiles/IoTClient.dir
-/home/pi/Desktop/IoT_Project/CMakeFiles/rebuild_cache.dir
-/home/pi/Desktop/IoT_Project/CMakeFiles/edit_cache.dir
-/home/pi/Desktop/IoT_Project/CMakeFiles/IoTServer.dir
+/home/pi/Desktop/IoT-Wake-Up-Radio/CMakeFiles/IoTClient.dir
+/home/pi/Desktop/IoT-Wake-Up-Radio/CMakeFiles/rebuild_cache.dir
+/home/pi/Desktop/IoT-Wake-Up-Radio/CMakeFiles/edit_cache.dir
+/home/pi/Desktop/IoT-Wake-Up-Radio/CMakeFiles/IoTServer.dir
