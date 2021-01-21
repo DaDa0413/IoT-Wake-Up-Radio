@@ -91,7 +91,9 @@ public:
         printf("Received file size:%lf\n", fsize);
 
         // double fsize = 8; // 1 KB = 8 Kbits
-        csv << "\"" << fr_name + "\"," << cur_round << ",\"" << toTime(endTime) << "\"," +  to_string(fsize / elapsed_seconds.count()) << " \r\n";
+        csv << "\"" << fr_name + "\"," << cur_round 
+            << ",\"" << toTime(endTime) << "\"," +  to_string(fsize / elapsed_seconds.count()) 
+            << " \r\n" << flush;
         fr.close();
     };
 
@@ -227,6 +229,8 @@ private:
                 // child process
                 if(pid == 0)
                 {
+                    // Unregister the signal handler
+                    signal(SIGINT, SIG_DFL);
                     // inform io_service fork finished (child)
                     global_io_service.notify_fork(io_service::fork_child);
 
@@ -265,7 +269,9 @@ void handler(int signo)
         std::chrono::duration<double> elapsed_seconds = endTime - it->second;
         double fsize = double(filesize(it->first)) / 128; // kb
         printf("Received file size:%lf\n", fsize);
-        csv << "\"" << it->first + "\"," << cur_round << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count()) << " \r\n";
+        csv << "\"" << it->first + "\"," << cur_round 
+            << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count()) 
+            << " \r\n" << flush;
         it = files.erase(it);
     }
     csv.close();
