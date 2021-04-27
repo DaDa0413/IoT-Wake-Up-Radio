@@ -31,6 +31,7 @@ map<string, std::chrono::system_clock::time_point> files;
 io_service global_io_service;
 fstream csv;
 int cur_round;
+void handler(int signo);
 
 int filesize(string fname)
 {
@@ -68,8 +69,7 @@ public:
         char temp[5];
         sprintf(temp, "%d", cur_round);
         fr_name = _socket.remote_endpoint().address().to_string() + "_" + temp;
-        // Insert ACK
-        /* insertDB(); */
+
         // open log file descriptor with app mode
         fr.open(fr_name, std::fstream::in | std::fstream::out | std::fstream::trunc);
         startTime = std::chrono::system_clock::now();
@@ -87,15 +87,16 @@ public:
         // Count end time and data rate
         endTime = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = endTime - startTime;
-        files.erase(fr_name);
-        double fsize = double(filesize(fr_name)) / 128; // kb
-        printf("Received file size:%lf\n", fsize);
+        if (files.erase(fr_name) != 0)
+        {
+            double fsize = double(filesize(fr_name)) / 128; // kb
+            printf("Received file size:%lf\n", fsize);
 
-        // double fsize = 8; // 1 KB = 8 Kbits
-        csv << "\"" << fr_name + "\"," << cur_round
-            << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count())
-            << " \r\n"
-            << flush;
+            csv << "\"" << fr_name + "\"," << cur_round
+                << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count())
+                << " \r\n"
+                << flush;
+        }
         fr.close();
     };
 
@@ -144,8 +145,8 @@ private:
                 // child process
                 if (pid == 0)
                 {
-                    // Unregister the signal handler
-                    signal(SIGINT, SIG_DFL);
+                    // Only child register the handler
+                    signal(SIGINT, handler);
                     // inform io_service fork finished (child)
                     global_io_service.notify_fork(io_service::fork_child);
 
@@ -177,9 +178,12 @@ private:
     }
 };
 
+// void handler(const boost::system::error_code &error, int signal_number)
 void handler(int signo)
 {
-    std::cout << "handling signal " << signo << std::endl;
+    // std::cout << to_string(getpid()) << " handling signal " << signal_number << std::endl;
+    std::cout << " Handling signal " << signo << std::endl;
+    // std::cout << to_string(getpid()) << " Map size: " << files.size() << std::endl;
     for (map<string, std::chrono::system_clock::time_point>::iterator it = files.begin(); it != files.end();)
     {
         std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
@@ -192,6 +196,7 @@ void handler(int signo)
             << flush;
         it = files.erase(it);
     }
+    csv.flush();
     csv.close();
     exit(1);
 }
@@ -199,7 +204,7 @@ void handler(int signo)
 int main(int argc, char *argv[])
 {
     signal(SIGCHLD, SIG_IGN);
-    signal(SIGINT, handler);
+    // signal(SIGINT, handler);
     // set port
     short port = PORT; // default PORT = 7001
     string logFName("tcp_");
@@ -215,7 +220,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     csv.open(LogDIR + logFName + ".csv", std::fstream::in | std::fstream::out | std::fstream::app);
-    // connectionCount.clear();
+
     // boost::asio::signal_set signals(global_io_service, SIGINT);
     // signals.async_wait(handler);
 
