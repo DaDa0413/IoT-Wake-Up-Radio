@@ -32,6 +32,7 @@ io_service global_io_service;
 fstream csv;
 int cur_round;
 void handler(int signo);
+string fr_name;
 
 int filesize(string fname)
 {
@@ -59,7 +60,6 @@ private:
     ip::tcp::socket _socket;
     array<char, MAXLENGTH> _data;
     std::chrono::system_clock::time_point startTime, endTime;
-    string fr_name;
     fstream fr;
 
 public:
@@ -90,10 +90,12 @@ public:
         if (files.erase(fr_name) != 0)
         {
             double fsize = double(filesize(fr_name)) / 128; // kb
-            printf("Received file size:%lf\n", fsize);
+
+            cout << fr_name << " received file size:" << fsize << endl;
+            // printf("fr_name received file size:%lf\n", fsize);
 
             csv << "\"" << fr_name + "\"," << cur_round
-                << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count())
+                << ",\"" << toTime(endTime) << "\"," + to_string(fsize)
                 << " \r\n"
                 << flush;
         }
@@ -189,9 +191,10 @@ void handler(int signo)
         std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = endTime - it->second;
         double fsize = double(filesize(it->first)) / 128; // kb
-        printf("Received file size:%lf\n", fsize);
+	// printf("Received file size:%lf\n", fsize);
+        cout << fr_name << " received file size:" << fsize << endl;
         csv << "\"" << it->first + "\"," << cur_round
-            << ",\"" << toTime(endTime) << "\"," + to_string(fsize / elapsed_seconds.count())
+            << ",\"" << toTime(endTime) << "\"," + to_string(fsize)
             << " \r\n"
             << flush;
         it = files.erase(it);
