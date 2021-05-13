@@ -33,6 +33,7 @@ fstream csv;
 int cur_round;
 void handler(int signo);
 string fr_name;
+char *startWakeTime;
 
 int filesize(string fname)
 {
@@ -91,11 +92,11 @@ public:
         {
             double fsize = double(filesize(fr_name)) / 128; // kb
 
-            cout << fr_name << " received file size:" << fsize << endl;
+            cout << "[IoTServer] " << fr_name << " received file size:" << fsize << endl;
             // printf("fr_name received file size:%lf\n", fsize);
-
+            
             csv << "\"" << fr_name + "\"," << cur_round
-                << ",\"" << toTime(endTime) << "\"," + to_string(fsize)
+                << ",\"" << toTime(endTime) << "\",\"" << startWakeTime << "\"," + to_string(fsize)
                 << " \r\n"
                 << flush;
         }
@@ -164,7 +165,7 @@ private:
                     // inform io_service fork finished (parent)
                     global_io_service.notify_fork(io_service::fork_parent);
 
-                    cout << "----- " + _socket.remote_endpoint().address().to_string() +
+                    cout << "[IoTServer] ----- " + _socket.remote_endpoint().address().to_string() +
                                 ":" + to_string(_socket.remote_endpoint().port()) + " pid:" + to_string(pid) + " -----\n";
 
                     _socket.close();
@@ -184,7 +185,7 @@ private:
 void handler(int signo)
 {
     // std::cout << to_string(getpid()) << " handling signal " << signal_number << std::endl;
-    std::cout << " Handling signal " << signo << std::endl;
+    std::cout << "[IoTServer] Handling signal " << signo << std::endl;
     // std::cout << to_string(getpid()) << " Map size: " << files.size() << std::endl;
     for (map<string, std::chrono::system_clock::time_point>::iterator it = files.begin(); it != files.end();)
     {
@@ -192,9 +193,9 @@ void handler(int signo)
         std::chrono::duration<double> elapsed_seconds = endTime - it->second;
         double fsize = double(filesize(it->first)) / 128; // kb
 	// printf("Received file size:%lf\n", fsize);
-        cout << fr_name << " received file size:" << fsize << endl;
+        cout << "[IoTServer] " << fr_name << " received file size:" << fsize << endl;
         csv << "\"" << it->first + "\"," << cur_round
-            << ",\"" << toTime(endTime) << "\"," + to_string(fsize)
+            << ",\"" << toTime(endTime) << "\",\"" << startWakeTime << "\"," + to_string(fsize)
             << " \r\n"
             << flush;
         it = files.erase(it);
@@ -211,10 +212,11 @@ int main(int argc, char *argv[])
     // set port
     short port = PORT; // default PORT = 7001
     string logFName("tcp_");
-    if (argc == 3)
+    if (argc == 4)
     {
-        cout << "Now Usage: IoTServer logName cur_round" << endl;
+        cout << "[IoTServer] Now Usage: IoTServer logName cur_round startWakeTime" << endl;
         logFName += argv[1];
+        startWakeTime = argv[3];
         cur_round = atoi(argv[2]);
     }
     else
