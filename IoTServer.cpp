@@ -92,7 +92,7 @@ public:
         {
             double fsize = double(filesize(fr_name)) / 128; // kb
 
-            cout << "[IoTServer] " << fr_name << " received file size:" << fsize << endl;
+            cout << "[IoTServer] " << fr_name << " received file size:" << fsize << "\n" << flush;
             // printf("fr_name received file size:%lf\n", fsize);
             
             csv << "\"" << fr_name + "\"," << cur_round
@@ -115,7 +115,7 @@ private:
                 {
                     string content;
                     content.append(_data.data(), _data.data() + length);
-                    fr << content;
+                    fr << content << flush;
                     do_read();
                 }
             });
@@ -166,7 +166,7 @@ private:
                     global_io_service.notify_fork(io_service::fork_parent);
 
                     cout << "[IoTServer] ----- " + _socket.remote_endpoint().address().to_string() +
-                                ":" + to_string(_socket.remote_endpoint().port()) + " pid:" + to_string(pid) + " -----\n";
+                                ":" + to_string(_socket.remote_endpoint().port()) + " pid:" + to_string(pid) + " -----\n" << flush;
 
                     _socket.close();
                     do_accept();
@@ -193,13 +193,14 @@ void handler(int signo)
         std::chrono::duration<double> elapsed_seconds = endTime - it->second;
         double fsize = double(filesize(it->first)) / 128; // kb
 	// printf("Received file size:%lf\n", fsize);
-        cout << "[IoTServer] " << fr_name << " received file size:" << fsize << endl;
+        cout << "[IoTServer] " << fr_name << " received file size:" << fsize << "\n";
         csv << "\"" << it->first + "\"," << cur_round
             << ",\"" << toTime(endTime) << "\",\"" << startWakeTime << "\"," + to_string(fsize)
             << " \r\n"
             << flush;
         it = files.erase(it);
     }
+    cout << flush;
     csv.flush();
     csv.close();
     exit(1);
